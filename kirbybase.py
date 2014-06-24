@@ -1720,7 +1720,7 @@ class KirbyBase:
                 line = line[:-1].strip()
                 try:
                     # If blank line, skip this record.
-                    if line == "": raise 'No Match'
+                    if line == "": raise KBNoMatch()
                     # Split the line up into fields.
                     record = line.split("|", maxfield)
 
@@ -1741,12 +1741,12 @@ class KirbyBase:
                                     if not pattern.search(
                                      self._unencodeString(record[fieldPos])
                                      ):
-                                        raise 'No Match'
+                                        raise KBNoMatch()
                                 else:
                                     if record[fieldPos] != pattern:
-                                        raise 'No Match'        
+                                        raise KBNoMatch()       
                             except Exception:
-                                raise KBError(
+                                raise KBNoMatch(
                                  'Invalid match expression for %s'
                                  % self.field_names[fieldPos])
                         # If the field type is boolean, then I will simply
@@ -1755,7 +1755,7 @@ class KirbyBase:
                         # here rather than a boolean compare.
                         elif self.field_types[fieldPos] == bool:
                             if record[fieldPos] != pattern:
-                                raise 'No Match'
+                                raise KBNoMatch()
                         # If it is not a string or a boolean, then it must 
                         # be a number or a date.
                         else:
@@ -1791,10 +1791,10 @@ class KirbyBase:
                             # they are trying to do and I do it directly.
                             # This sped up queries by 40%.     
                             if not pattern[0](tableValue, pattern[1]):
-                                raise 'No Match' 
+                                raise KBNoMatch()
                 # If a 'No Match' exception was raised, then go to the
                 # next record, otherwise, add it to the list of matches.
-                except 'No Match':
+                except KBNoMatch:
                     pass
                 else:
                     match_list.append([line, fpos])
@@ -2029,3 +2029,7 @@ class KBError(Exception):
     def __repr__(self):
         format = """KBError("%s")"""
         return format % (self.value)
+
+class KBNoMatch(KBError):
+    def __init__(self,value="No Match"):
+        super(KBNoMatch,self).__init__(value)
